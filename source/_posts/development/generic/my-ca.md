@@ -5,14 +5,15 @@ tags:
   - CA
   - TLS
   - SSL
+  - OpenSSL
 categories:
   - Development
   - Generic
 ---
 
-# 自建 CA 证书
+# 自建 CA
 
-## 0. 什么是 CA 证书？
+## 什么是 CA 证书？
 
 **CA（Certificate Authority，证书颁发机构）** 是一个"可信第三方"。
 它用自己的**私钥**给别人的证书"盖章"（签名），从而证明"这张证书确实是某某机构发的"。
@@ -31,14 +32,14 @@ categories:
 
 > 私钥一旦泄露，等于你的 CA 被"盗号"，任何人可以伪造合法证书。
 
-## 1. 依赖
+## 依赖
 
 ```bash
 # 检查 openssl 是否安装
 openssl version
 ```
 
-## 2. 生成根 CA 私钥
+## 生成根 CA 私钥
 
 ```bash
 # -out    输出文件名
@@ -50,7 +51,7 @@ openssl genrsa -out KeunlasRootCA.key 4096
 chmod 400 KeunlasRootCA.key
 ```
 
-## 3. 编写 CA 配置文件
+## 编写 CA 配置文件
 
 ```cnf
 # KeunlasRootCA.cnf
@@ -69,13 +70,13 @@ CN = KeunlasRootCA              # 通用名 Common Name（必填）
 
 [ v3_ca ]
 # 以下三项是"它是一张 CA 证书"的关键标志：
-basicConstraints       = critical, CA:TRUE      # 允许它签发其他证书
-keyUsage               = critical, keyCertSign, cRLSign  # 用途：签证书、签吊销列表
-subjectKeyIdentifier   = hash                   # 给证书算一个唯一 ID
-authorityKeyIdentifier = keyid:always, issuer   # 记录"谁签发的我"
+basicConstraints       = critical, CA:TRUE                  # 允许它签发其他证书
+keyUsage               = critical, keyCertSign, cRLSign     # 用途：签证书、签吊销列表
+subjectKeyIdentifier   = hash                               # 给证书算一个唯一 ID
+authorityKeyIdentifier = keyid:always, issuer               # 记录"谁签发的我"
 ```
 
-## 4. 生成根 CA 自签名证书
+## 生成根 CA 自签名证书
 
 ```bash
 # -new              生成新证书请求
@@ -93,7 +94,7 @@ openssl req -new -x509 -days 10950 -nodes \
   -out KeunlasRootCA.crt
 ```
 
-## 5. 校验根 CA 证书
+## 校验根 CA 证书
 
 ```bash
 # 查看证书内容
@@ -107,7 +108,7 @@ openssl x509 -in KeunlasRootCA.crt -noout -text | grep -E "CA:TRUE|Certificate S
 
 # 签发服务器证书
 
-## 1. 生成服务器私钥和 CSR
+## 生成服务器私钥和 CSR
 
 ```bash
 # 服务器私钥
@@ -125,7 +126,7 @@ CA 拿到 CSR 后核验、签名，就能"盖章"发证。
 CN=localhost 表示这张证书是给 localhost 域名用的。
 
 
-## 2. 使用 CA 签发服务器证书
+## 使用 CA 签发服务器证书
 
 
 ```bash
@@ -149,7 +150,7 @@ openssl x509 -req \
 没有 SAN 的证书，浏览器会报 ERR_CERT_COMMON_NAME_INVALID。
 SAN 必须包含你要访问的实际域名/IP，例如 DNS:localhost、IP:127.0.0.1。
 
-## 3. 校验服务器证书
+## 校验服务器证书
 
 ```bash
 # 确认签发者、SAN 是否正确
