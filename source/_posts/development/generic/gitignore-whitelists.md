@@ -8,7 +8,7 @@ categories:
   - Development
   - Generic
 ---
-
+WhiteLists
 
 虽然已经用了多年的 git, 但是至今都没怎么好好的总结一下 ignore 规则。今天心血来潮，重新仔细的总结一下 gitignore 到底怎么好好的去写，并记录一下 gitignore 的白名单写法。
 
